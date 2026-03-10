@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
-import 'home_screen.dart';
+import 'profile_setup_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -14,10 +16,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // Dummy check successful
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => ProfileSetupScreen()),
       );
     }
   }
@@ -34,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text("Social Connect", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue)),
               SizedBox(height: 40),
+              
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(labelText: "Email", border: OutlineInputBorder()),
@@ -43,6 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               SizedBox(height: 20),
+              
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
@@ -53,11 +56,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               SizedBox(height: 30),
+              
               ElevatedButton(
                 onPressed: _handleLogin,
-                child: Text("Login"),
                 style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
+                child: Text("Login"),
               ),
+              
               TextButton(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SignupScreen())),
                 child: Text("Don't have an account? Sign Up"),

@@ -12,7 +12,7 @@ class SocialConnectApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Social Connect',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginScreen(), // Sab se pehle Login dikhega
+      home: const LoginScreen(), // Sab se pehle Login dikhega
     );
   }
 }
