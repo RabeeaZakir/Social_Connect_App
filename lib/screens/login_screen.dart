@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
-import 'profile_setup_screen.dart'; 
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -16,16 +15,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ProfileSetupScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text("Login")),
       body: Padding(
         padding: EdgeInsets.all(20.0),
         child: Form(
@@ -35,38 +32,12 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text("Social Connect", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue)),
               SizedBox(height: 40),
-              
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: "Email", border: OutlineInputBorder()),
-                validator: (value) {
-                  if (value == null || !value.contains('@')) return "Enter a valid email";
-                  return null;
-                },
-              ),
+              TextFormField(controller: _emailController, decoration: InputDecoration(labelText: "Email", border: OutlineInputBorder()), validator: (v) => v!.contains('@') ? null : "Invalid Email"),
               SizedBox(height: 20),
-              
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(labelText: "Password", border: OutlineInputBorder()),
-                validator: (value) {
-                  if (value == null || value.length < 6) return "Password must be 6+ chars";
-                  return null;
-                },
-              ),
+              TextFormField(controller: _passwordController, obscureText: true, decoration: InputDecoration(labelText: "Password", border: OutlineInputBorder()), validator: (v) => v!.length >= 6 ? null : "Too short"),
               SizedBox(height: 30),
-              
-              ElevatedButton(
-                onPressed: _handleLogin,
-                style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
-                child: Text("Login"),
-              ),
-              
-              TextButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SignupScreen())),
-                child: Text("Don't have an account? Sign Up"),
-              )
+              ElevatedButton(onPressed: _handleLogin, child: Text("Login")),
+              TextButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SignupScreen())), child: Text("Sign Up instead"))
             ],
           ),
         ),

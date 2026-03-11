@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart'; // Hum ye file abhi banayenge
+import 'package:provider/provider.dart';
+import 'screens/login_screen.dart';
+import 'screens/user_provider.dart';
 
 void main() {
-  runApp(SocialConnectApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => UserProvider(),
+      child: SocialConnectApp(),
+    ),
+  );
 }
 
 class SocialConnectApp extends StatelessWidget {
@@ -10,9 +17,7 @@ class SocialConnectApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Social Connect',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginScreen(), // Sab se pehle Login dikhega
+      home: const LoginScreen(),
     );
   }
 }
