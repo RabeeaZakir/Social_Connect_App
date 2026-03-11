@@ -1,86 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'user_provider.dart'; // Yahan apna sahi path check kar lena
-import 'login_screen.dart';
-import 'profile_setup_screen.dart';
+// Agar user_provider file nahi hai, toh ye line hatana mat bhoolna!
+import '../user_provider.dart';
 import 'add_post_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  // Feed ka data
-  List<Map<String, dynamic>> posts = [
-    {"username": "Rabeea", "caption": "Hello world!", "isLiked": false},
-  ];
-
-  void _addNewPost(String caption) {
-    setState(() {
-      posts.insert(0, {"username": "My Post", "caption": caption, "isLiked": false});
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home Feed"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileSetupScreen())),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
-            ),
-          ),
-        ],
-      ),
-      // Yahan Consumer use kiya hai taake Provider ka data real-time update ho
+      appBar: AppBar(title: const Text("Home Feed")),
       body: Column(
         children: [
-          // Profile Status Header
+          // User Profile Card
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Consumer<UserProvider>(
-              builder: (context, user, child) {
-                return Card(
-                  color: Colors.blue.shade50,
-                  child: ListTile(
-                    title: Text("Name: ${user.name}"),
-                    subtitle: Text("Bio: ${user.bio}"),
-                  ),
-                );
-              },
+              builder: (context, user, child) => Card(
+                color: Colors.blue.shade50,
+                child: ListTile(
+                  title: Text("Name: ${user.name}"),
+                  subtitle: Text("Bio: ${user.bio}"),
+                ),
+              ),
             ),
           ),
-          // Post Feed
+          // Firestore se Data fetch karna
           Expanded(
-            child: ListView.builder(
-              itemCount: posts.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.all(10),
-                  child: ListTile(
-                    leading: const CircleAvatar(child: Icon(Icons.person)),
-                    title: Text(posts[index]['username']),
-                    subtitle: Text(posts[index]['caption']),
-                    trailing: IconButton(
-                      icon: Icon(
-                        posts[index]['isLiked'] ? Icons.favorite : Icons.favorite_border,
-                        color: posts[index]['isLiked'] ? Colors.red : Colors.grey,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('posts').orderBy('createdAt', descending: true).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text("No posts yet!"));
+                }
+                
+                var posts = snapshot.data!.docs;
+                return ListView.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    var post = posts[index];
+                    return Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        title: Text(post['caption'] ?? 'No Caption'),
+                        subtitle: Text("User ID: ${post['userId']}"),
                       ),
-                      onPressed: () => setState(() => posts[index]['isLiked'] = !posts[index]['isLiked']),
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             ),
@@ -89,7 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AddPostScreen(onPostAdded: _addNewPost))),
+          context, 
+          MaterialPageRoute(builder: (context) => const AddPostScreen())
+        ),
         child: const Icon(Icons.add),
       ),
     );

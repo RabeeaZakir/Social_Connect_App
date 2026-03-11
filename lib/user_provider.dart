@@ -7,9 +7,10 @@ class UserProvider with ChangeNotifier {
   String get name => _name;
   String get bio => _bio;
 
+  // Firebase se data lane ke liye hum ek method add karenge
   void updateProfile(String newName, String newBio) {
     _name = newName;
     _bio = newBio;
-    notifyListeners(); // Yeh command poori app ko bata degi ke data update ho gaya hai
+    notifyListeners(); 
   }
 }
