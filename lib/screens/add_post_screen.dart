@@ -10,29 +10,57 @@ class AddPostScreen extends StatefulWidget {
 
 class _AddPostScreenState extends State<AddPostScreen> {
   final _captionController = TextEditingController();
+  bool _isLoading = false; // Loading indicator ke liye
 
   void _submitPost() async {
     final user = FirebaseAuth.instance.currentUser;
-    // Yahan saari fields zaroor daalo jo HomeScreen read kar raha hai
-    await FirebaseFirestore.instance.collection('posts').add({
-      'userId': user!.uid,
-      'username': user.email, // Ya tum user collection se naam fetch karo
-      'caption': _captionController.text,
-      'imageUrl': 'https://picsum.photos/400', 
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    Navigator.pop(context);
+    if (_captionController.text.isEmpty || user == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Data Firestore mein save karna
+      await FirebaseFirestore.instance.collection('posts').add({
+        'userId': user.uid,
+        'username': user.email ?? "User", 
+        'caption': _captionController.text,
+        'imageUrl': 'https://picsum.photos/400', 
+        'timestamp': FieldValue.serverTimestamp(),
+        'likes': [], // Ye field HomeScreen ke liye zaroori hai
+      });
+
+      // MOUNTED CHECK: Yahan check kar rahay hain ke screen abhi tak open hai ya nahi
+      if (!mounted) return; 
+
+      // Agar open hai, toh screen band karo
+      Navigator.pop(context);
+      
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("New Post")),
-      body: Column(
-        children: [
-          TextField(controller: _captionController, decoration: const InputDecoration(labelText: "Caption")),
-          ElevatedButton(onPressed: _submitPost, child: const Text("Post to Feed")),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _captionController, 
+              decoration: const InputDecoration(labelText: "Caption", border: OutlineInputBorder()),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 20),
+            _isLoading 
+              ? const CircularProgressIndicator() 
+              : ElevatedButton(onPressed: _submitPost, child: const Text("Post to Feed")),
+          ],
+        ),
       ),
     );
   }

@@ -18,6 +18,10 @@ dependencies:
   firebase_storage: ^13.1.0
   flutter_form_builder: ^10.3.0+2
   form_builder_validators: ^11.3.0
+  lottie: ^3.1.2
+  timeago: ^3.6.1
+  flutter_local_notifications: ^17.2.2
+  
 
 dev_dependencies:
   flutter_test:
