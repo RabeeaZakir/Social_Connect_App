@@ -1,39 +1,64 @@
-# Social Connect - Mobile App Development Internship Task
+Social Connect - Mobile App Development Internship Task
+Social Connect is a minimal, real-time social media platform built using Flutter and Firebase. This project was developed as a 3-week internship task, demonstrating expertise in state management, real-time database integration, and professional UI/UX design.
 
-Social Connect is a minimal social media platform built using **Flutter** and **Firebase**. This project was developed as part of a 3-week internship task, covering core features like authentication, real-time feed, interactions, and state management.
+🚀 Project Milestones
+Week 1: Foundation & Authentication
+Authentication: Secure Sign-Up, Login, and Forgot Password flows using Firebase Auth.
 
-## 🚀 Features
+Profile Setup: User-centric profile creation and management.
 
-### Week 1: Core Setup & Authentication
-* **Authentication:** Secure Sign Up, Login, and Forgot Password using Firebase Auth.
-* **Profile Setup:** User profile creation with name, bio, and contact details.
-* **Navigation:** Implemented using Flutter's Bottom Navigation with Stack and Tab navigators.
+Navigation: Robust navigation logic using BottomNavigationBar and Navigator stacks.
 
-### Week 2: Social Features & State Management
-* **Post Management:** * Real-time Feed fetching data from Firestore.
-    * CRUD operations (Create, Edit, Delete) for posts.
-    * Timestamps for every post.
-* **Interactions:**
-    * **Like System:** Real-time like/unlike with a dynamic Red Heart toggle.
-    * **Comment System:** Bottom-sheet modal for adding and viewing comments.
-* **User Discovery:** Tap on any user's name in the feed to view their specific profile.
-* **State Management:** Used **Provider** (State Management) to handle global user data and authentication states efficiently.
+Week 2: Social Core & State Management
+Real-time Feed: Dynamic feed fetching data directly from Cloud Firestore.
 
-### Week 3: Polish & Advanced UI
-* **Real-time Updates:** Real-time listeners for likes, comments, and post updates.
-* **Liked Posts Screen:** A dedicated section to view all posts you have liked.
-* **Professional UI:** Clean, dark-themed Material 3 design with responsive layouts.
+CRUD Operations: Users can Create, Edit, and Delete their own posts seamlessly.
 
-## 🛠️ Tech Stack
-* **Frontend:** Flutter (Dart)
-* **Backend:** Firebase (Firestore, Authentication)
-* **State Management:** Provider
-* **Database:** Cloud Firestore
+Interactive Engagement: * Like System: Real-time toggling of likes with visual feedback.
 
-## 📸 Screenshots
+Comment System: Interactive showModalBottomSheet for viewing and adding comments.
 
+User Discovery: Navigable user profiles from the main feed.
 
-## 🛠️ Installation & Setup
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/RabeeaZakir/social-connect-app.git](https://github.com/RabeeaZakir/social-connect-app.git)
+State Management: Efficient global state handling using Provider.
+
+Week 3: Polish, UI, & Notifications
+Real-time Synchronization: Built using StreamBuilder for instantaneous UI updates (Likes/Comments).
+
+Advanced UX:
+
+Timestamp Formatting: Used timeago to display human-readable time (e.g., "5 minutes ago").
+
+Interactive Notifications: Integrated flutter_local_notifications for real-time engagement alerts.
+
+Performance: Optimized rendering and optimized try-catch blocks for robust error handling.
+
+🛠️ Tech Stack
+Frontend: Flutter (Dart)
+
+Backend: Firebase (Cloud Firestore, Authentication)
+
+State Management: Provider
+
+Packages: timeago, flutter_local_notifications, lottie, firebase_core.
+
+⚙️ Installation & Setup
+Clone the repository:
+
+Bash
+git clone https://github.com/RabeeaZakir/social-connect-app.git
+Setup Firebase:
+
+Create a project in Firebase Console.
+
+Place your google-services.json in the android/app/ directory.
+
+Install dependencies:
+
+Bash
+flutter pub get
+Run the app:
+
+Bash
+flutter run
+Developed as part of a 3-week Mobile App Development Internship.
