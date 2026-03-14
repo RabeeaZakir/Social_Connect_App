@@ -1,17 +1,39 @@
-# social_app
+# Social Connect - Mobile App Development Internship Task
 
-A new Flutter project.
+Social Connect is a minimal social media platform built using **Flutter** and **Firebase**. This project was developed as part of a 3-week internship task, covering core features like authentication, real-time feed, interactions, and state management.
 
-## Getting Started
+## 🚀 Features
 
-This project is a starting point for a Flutter application.
+### Week 1: Core Setup & Authentication
+* **Authentication:** Secure Sign Up, Login, and Forgot Password using Firebase Auth.
+* **Profile Setup:** User profile creation with name, bio, and contact details.
+* **Navigation:** Implemented using Flutter's Bottom Navigation with Stack and Tab navigators.
 
-A few resources to get you started if this is your first Flutter project:
+### Week 2: Social Features & State Management
+* **Post Management:** * Real-time Feed fetching data from Firestore.
+    * CRUD operations (Create, Edit, Delete) for posts.
+    * Timestamps for every post.
+* **Interactions:**
+    * **Like System:** Real-time like/unlike with a dynamic Red Heart toggle.
+    * **Comment System:** Bottom-sheet modal for adding and viewing comments.
+* **User Discovery:** Tap on any user's name in the feed to view their specific profile.
+* **State Management:** Used **Provider** (State Management) to handle global user data and authentication states efficiently.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Week 3: Polish & Advanced UI
+* **Real-time Updates:** Real-time listeners for likes, comments, and post updates.
+* **Liked Posts Screen:** A dedicated section to view all posts you have liked.
+* **Professional UI:** Clean, dark-themed Material 3 design with responsive layouts.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠️ Tech Stack
+* **Frontend:** Flutter (Dart)
+* **Backend:** Firebase (Firestore, Authentication)
+* **State Management:** Provider
+* **Database:** Cloud Firestore
+
+## 📸 Screenshots
+
+
+## 🛠️ Installation & Setup
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/RabeeaZakir/social-connect-app.git](https://github.com/RabeeaZakir/social-connect-app.git)
