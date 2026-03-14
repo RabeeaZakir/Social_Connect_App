@@ -13,6 +13,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
 
   // AuthScreen ke _submit function mein ye update karo
+// AuthScreen mein ye logic use karen
 Future<void> _submit() async {
   try {
     if (!_isLogin) {
@@ -21,14 +22,11 @@ Future<void> _submit() async {
         password: _pass.text.trim()
       );
       
-      // Profile creation with extra fields
+      // Yahan 'name' field lazmi save karni hai
       await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set({
-        'name': _name.text.trim(),
+        'name': _name.text.trim(), // Yahan se naam jayega
         'email': _email.text.trim(),
-        'bio': "Hey there! I am new.", // Default bio
-        'contact': "Not provided",
-        'profilePic': "https://www.w3schools.com/howto/img_avatar.png",
-        'createdAt': FieldValue.serverTimestamp(),
+        'bio': "Hey there! I am new.",
       });
     } else {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email.text.trim(), password: _pass.text.trim());
@@ -37,7 +35,6 @@ Future<void> _submit() async {
     debugPrint(e.toString());
   }
 }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

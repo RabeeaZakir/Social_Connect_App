@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProvider with ChangeNotifier {
-  String _name = "Guest User";
-  String _bio = "No bio yet";
+  Map<String, dynamic>? _userData;
+  bool _isLoading = false;
 
-  String get name => _name;
-  String get bio => _bio;
+  Map<String, dynamic>? get userData => _userData;
+  bool get isLoading => _isLoading;
 
-  // Firebase se data lane ke liye hum ek method add karenge
-  void updateProfile(String newName, String newBio) {
-    _name = newName;
-    _bio = newBio;
-    notifyListeners(); 
+  // Global method jo kahin se bhi user ka data fetch kar sakay
+  Future<void> fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _isLoading = true;
+      notifyListeners();
+
+      var doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      _userData = doc.data();
+      
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }
