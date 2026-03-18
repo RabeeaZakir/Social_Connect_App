@@ -9,24 +9,36 @@ class LikedPostsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     String uid = FirebaseAuth.instance.currentUser!.uid;
     return Scaffold(
-      appBar: AppBar(title: const Text("My Liked Posts")),
+      backgroundColor: const Color(0xFFF3F5F9),
+      appBar: AppBar(
+        title: const Text("Liked Posts", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: StreamBuilder<QuerySnapshot>(
-        // Firestore query jo sirf user ke liked posts layegi
         stream: FirebaseFirestore.instance.collection('posts').where('likes', arrayContains: uid).snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          if (snapshot.data!.docs.isEmpty) return const Center(child: Text("No liked posts yet!"));
+          if (snapshot.data!.docs.isEmpty) return const Center(child: Text("You haven't liked anything yet!"));
 
           return ListView.builder(
+            padding: const EdgeInsets.all(12),
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, i) {
               var data = snapshot.data!.docs[i].data() as Map<String, dynamic>;
-              return Card(
-                margin: const EdgeInsets.all(10),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
+                ),
                 child: ListTile(
-                  leading: const Icon(Icons.favorite, color: Colors.red),
-                  title: Text(data['username'] ?? "User"),
-                  subtitle: Text(data['caption']),
+                  contentPadding: const EdgeInsets.all(12),
+                  leading: const CircleAvatar(backgroundColor: Colors.redAccent, child: Icon(Icons.favorite, color: Colors.white)),
+                  title: Text(data['username'] ?? "User", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(data['caption'] ?? "", maxLines: 2, overflow: TextOverflow.ellipsis),
                 ),
               );
             },

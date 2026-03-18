@@ -14,60 +14,110 @@ class _AuthScreenState extends State<AuthScreen> {
   final _confirmPass = TextEditingController();
   final _name = TextEditingController();
   bool _isLogin = true;
+  bool _isLoading = false;
 
-  // Error Popup function
   void _showError(String message) {
-    showDialog(context: context, builder: (_) => AlertDialog(title: const Text("Error"), content: Text(message), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))]));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.redAccent));
   }
 
   void _submit() async {
+    if (_email.text.isEmpty || _pass.text.isEmpty) {
+      _showError("Please fill all fields");
+      return;
+    }
+    setState(() => _isLoading = true);
     try {
       if (_isLogin) {
         await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email.text.trim(), password: _pass.text.trim());
       } else {
-        if (_pass.text != _confirmPass.text) return _showError("Passwords don't match!");
+        if (_pass.text != _confirmPass.text) throw Exception("Passwords don't match!");
         UserCredential cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _email.text.trim(), password: _pass.text.trim());
-        await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set({'name': _name.text, 'email': _email.text});
+        await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set({
+          'name': _name.text, 
+          'email': _email.text,
+          'bio': "Hey there! I am using Social Connect.",
+          'profilePic': null
+        });
       }
     } on FirebaseAuthException catch (e) {
       _showError(e.message ?? "An error occurred");
+    } catch (e) {
+      _showError(e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  void _forgotPassword() async {
-    if (_email.text.isEmpty) return _showError("Enter email first!");
-    await FirebaseAuth.instance.sendPasswordResetEmail(email: _email.text);
-    _showError("Password reset link sent to your email.");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0E1B48),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(30),
-          child: Column(
-            children: [
-              const Text("Social Connect", style: TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 30),
-              if (!_isLogin) TextField(controller: _name, decoration: _inputDec("Full Name")),
-              const SizedBox(height: 10),
-              TextField(controller: _email, decoration: _inputDec("Email")),
-              const SizedBox(height: 10),
-              TextField(controller: _pass, obscureText: true, decoration: _inputDec("Password")),
-              const SizedBox(height: 10),
-              if (!_isLogin) TextField(controller: _confirmPass, obscureText: true, decoration: _inputDec("Confirm Password")),
-              const SizedBox(height: 20),
-              ElevatedButton(onPressed: _submit, child: Text(_isLogin ? "LOGIN" : "SIGN UP")),
-              TextButton(onPressed: () => setState(() => _isLogin = !_isLogin), child: Text(_isLogin ? "Don't have an account? Sign Up" : "Have account? Login")),
-              if (_isLogin) TextButton(onPressed: _forgotPassword, child: const Text("Forgot Password?", style: TextStyle(color: Colors.white70))),
-            ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF0E1B48), Color(0xFF1C2D5A)],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              children: [
+                const Icon(Icons.share_arrival_time_outlined, size: 80, color: Colors.white),
+                const SizedBox(height: 20),
+                const Text("Social Connect", style: TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                const Text("Connect with the world", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                const SizedBox(height: 40),
+                if (!_isLogin) _buildField(_name, "Full Name", Icons.person),
+                const SizedBox(height: 15),
+                _buildField(_email, "Email", Icons.email),
+                const SizedBox(height: 15),
+                _buildField(_pass, "Password", Icons.lock, obscure: true),
+                if (!_isLogin) ...[
+                  const SizedBox(height: 15),
+                  _buildField(_confirmPass, "Confirm Password", Icons.lock_clock, obscure: true),
+                ],
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF0E1B48),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 5,
+                    ),
+                    onPressed: _isLoading ? null : _submit,
+                    child: _isLoading ? const CircularProgressIndicator() : Text(_isLogin ? "LOGIN" : "CREATE ACCOUNT", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => setState(() => _isLogin = !_isLogin),
+                  child: Text(_isLogin ? "New here? Create an account" : "Already have an account? Login", style: const TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  InputDecoration _inputDec(String label) => InputDecoration(filled: true, fillColor: Colors.white, labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)));
+  Widget _buildField(TextEditingController controller, String label, IconData icon, {bool obscure = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: const TextStyle(color: Colors.black),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: const Color(0xFF0E1B48)),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.9),
+        hintText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+      ),
+    );
+  }
 }

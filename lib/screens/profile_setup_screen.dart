@@ -15,24 +15,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _nameController = TextEditingController();
   final _bioController = TextEditingController();
   final user = FirebaseAuth.instance.currentUser;
-  bool _isLoading = false;
+  bool _isUploading = false;
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 50);
     if (pickedFile != null) {
-      setState(() => _isLoading = true);
-      final ref = FirebaseStorage.instance.ref().child('user_images').child('${user!.uid}.jpg');
-      await ref.putFile(File(pickedFile.path));
-      final url = await ref.getDownloadURL();
-      await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({'profilePic': url});
-      setState(() => _isLoading = false);
+      setState(() => _isUploading = true);
+      try {
+        final ref = FirebaseStorage.instance.ref().child('user_images').child('${user!.uid}.jpg');
+        await ref.putFile(File(pickedFile.path));
+        final url = await ref.getDownloadURL();
+        await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({'profilePic': url});
+      } finally {
+        setState(() => _isUploading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Profile"), centerTitle: true),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Edit Profile", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance.collection('users').doc(user!.uid).snapshots(),
         builder: (context, snapshot) {
@@ -42,25 +52,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _bioController.text = data['bio'] ?? "";
 
           return ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             children: [
               Center(
-                child: Stack(children: [
-                  CircleAvatar(radius: 60, backgroundImage: data['profilePic'] != null ? NetworkImage(data['profilePic']) : null, child: data['profilePic'] == null ? const Icon(Icons.person, size: 60) : null),
-                  Positioned(bottom: 0, right: 0, child: CircleAvatar(backgroundColor: Colors.deepPurple, child: IconButton(icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20), onPressed: _pickImage))),
-                ]),
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.deepPurple, width: 3)),
+                      child: CircleAvatar(
+                        radius: 65,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: data['profilePic'] != null ? NetworkImage(data['profilePic']) : null,
+                        child: data['profilePic'] == null ? const Icon(Icons.person, size: 70, color: Colors.grey) : null,
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0, right: 4,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.deepPurple,
+                        radius: 20,
+                        child: IconButton(icon: const Icon(Icons.camera_alt, color: Colors.white, size: 18), onPressed: _pickImage),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              if(_isLoading) const Padding(padding: EdgeInsets.all(8.0), child: LinearProgressIndicator()),
-              const SizedBox(height: 30),
-              TextField(controller: _nameController, decoration: const InputDecoration(labelText: "Full Name", filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15))))),
+              if (_isUploading) const Padding(padding: EdgeInsets.only(top: 10), child: LinearProgressIndicator()),
+              const SizedBox(height: 40),
+              _editField("Full Name", _nameController),
+              const SizedBox(height: 20),
+              _editField("Bio", _bioController, maxLines: 3),
+              const SizedBox(height: 40),
+              SizedBox(
+                height: 55,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: () async {
+                    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+                      'name': _nameController.text,
+                      'bio': _bioController.text,
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile Updated!")));
+                  },
+                  child: const Text("Save Changes", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
               const SizedBox(height: 15),
-              TextField(controller: _bioController, decoration: const InputDecoration(labelText: "Bio", filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15))))),
-              const SizedBox(height: 30),
-              FilledButton(onPressed: () => FirebaseFirestore.instance.collection('users').doc(user!.uid).update({'name': _nameController.text, 'bio': _bioController.text}), child: const Text("Save Changes")),
-              TextButton(onPressed: () => FirebaseAuth.instance.signOut(), child: const Text("Logout", style: TextStyle(color: Colors.red))),
+              TextButton(onPressed: () => FirebaseAuth.instance.signOut(), child: const Text("Logout", style: TextStyle(color: Colors.redAccent, fontSize: 16))),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _editField(String label, TextEditingController controller, {int maxLines = 1}) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.deepPurple),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: Colors.deepPurple, width: 2)),
+        filled: true,
+        // YAHAN FIX HAI:
+        fillColor: Colors.grey[100]?.withOpacity(0.5) ?? Colors.white, 
       ),
     );
   }
