@@ -10,19 +10,22 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-   compileOptions {
+    compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        coreLibraryDesugaringEnabled = true  // "is" hata dein, sirf ye likhein
+        // .kts file mein 'is' lagana lazmi hai
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        // Deprecation warning se bachne ke liye simple "17" use karein
+        jvmTarget = "17"
     }
 
     defaultConfig {
         applicationId = "com.example.social_app"
-        minSdk = flutter.minSdkVersion
+        // Notifications aur Desugaring ke liye minSdk 21 ya 23 behtar hai
+        minSdk = flutter.minSdkVersion 
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -43,6 +46,6 @@ flutter {
 
 dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
-    // Ye line notifications package ke liye laazmi hai
+    // Is line ke baghair desugaring error deta hai
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
