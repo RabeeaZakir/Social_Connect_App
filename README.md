@@ -1,45 +1,54 @@
-# Social Connect - Mobile App Development Internship Task
-Social Connect is a minimal, real-time social media platform built using Flutter and Firebase. This project was developed as a 3-week internship task, demonstrating expertise in state management, real-time database integration, and professional UI/UX design.
+# Social Connect 📱
+**Minimal, Real-Time Social Media Platform**
 
-# 🚀 Project Milestones
-# Week 1: Foundation & Authentication
-# Authentication: Secure Sign-Up, Login, and Forgot Password flows using Firebase Auth.
-# Profile Setup: User-centric profile creation and management.
-# Navigation: Robust navigation logic using BottomNavigationBar and Navigator stacks.
+Social Connect is a high-performance social media application built with **Flutter** and **Firebase**. Developed as a comprehensive 3-week internship project, it showcases real-time data synchronization, secure authentication, and a user-centric UI/UX.
 
-# Week 2: Social Core & State Management
-# Real-time Feed: Dynamic feed fetching data directly from Cloud Firestore.
-# CRUD Operations: Users can Create, Edit, and Delete their own posts seamlessly.
-# Interactive Engagement: * Like System: Real-time toggling of likes with visual feedback.
-# Comment System: Interactive showModalBottomSheet for viewing and adding comments.
-# User Discovery: Navigable user profiles from the main feed.
-# State Management: Efficient global state handling using Provider.
+---
 
-# Week 3: Polish, UI, & Notifications
-# Real-time Synchronization: Built using StreamBuilder for instantaneous UI updates (Likes/Comments).
-# Advanced UX:
-# Timestamp Formatting: Used timeago to display human-readable time (e.g., "5 minutes ago").
-# Interactive Notifications: Integrated flutter_local_notifications for real-time engagement alerts.
-# Performance: Optimized rendering and optimized try-catch blocks for robust error handling.
+## 🚀 Internship Milestones
 
-# 🛠️ Tech Stack
-# Frontend: Flutter (Dart)
-# Backend: Firebase (Cloud Firestore, Authentication)
-# State Management: Provider
-# Packages: timeago, flutter_local_notifications, lottie, firebase_core.
+### Week 1: Foundation & Security
+* **Authentication:** Secure Sign-Up, Login, and Password Recovery using Firebase Auth.
+* **Profile Architecture:** Personal user data management and profile setup.
+* **Core Navigation:** Seamless transition between features using `BottomNavigationBar`.
 
-# ⚙️ Installation & Setup
-# Clone the repository:
-Bash
-git clone https://github.com/RabeeaZakir/social-connect-app.git
+### Week 2: Social Core & Real-time Interaction
+* **Live Feed:** Dynamic content fetching using Cloud Firestore.
+* **Full CRUD Operations:** Users can Create, Edit, and Delete posts with instant updates.
+* **Engagement Engine:** * **Like System:** Real-time state toggling for post likes.
+    * **Comment Module:** Interactive `showModalBottomSheet` for deep engagement.
+* **Discovery:** Navigable user profiles directly from the feed.
+
+### Week 3: Advanced UX & Optimization 
+* **Real-time Sync:** Powered by `StreamBuilder` for zero-lag UI updates.
+* **Notification System:** * **Interactive Popups:** In-app SnackBar alerts for likes and comments.
+    * **Permanent History:** Cloud-stored notification center for persistence.
+* **Robust Search:** Secure user discovery with fail-safe error handling for missing data fields.
+* **Human-Readable UX:** Integrated `timeago` for intuitive timestamps.
+
+---
+
+## 🛠️ Tech Stack
+* **Frontend:** Flutter (Dart)
+* **Backend:** Firebase (Firestore & Auth)
+* **State Management:** Provider / State-driven Streams
+* **Key Packages:** `cloud_firestore`, `firebase_auth`, `timeago`, `lottie`
+
+---
+
+## ⚙️ Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/RabeeaZakir/social-connect-app.git](https://github.com/RabeeaZakir/social-connect-app.git)
 # Setup Firebase:
 Create a project in Firebase Console.
 Place your google-services.json in the android/app/ directory.
+
 # Install dependencies:
 Bash
 flutter pub get
-Run the app:
 
+# Run the app:
 Bash
 flutter run
-Developed as part of a 3-week Mobile App Development Internship.
