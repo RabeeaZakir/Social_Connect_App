@@ -15,11 +15,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String searchQuery = "";
   bool isSearching = false;
 
-  // --- 1. Notification Logic with POPUP ---
   Future<void> _addNotification(String title, String message) async {
     if (user == null) return;
     try {
-      // Firestore mein save karna
       await FirebaseFirestore.instance.collection('notifications').add({
         'userId': user!.uid,
         'title': title,
@@ -27,14 +25,11 @@ class _HomeScreenState extends State<HomeScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
-      // SCREEN PAR POPUP DIKHANA
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("$title: $message"),
           backgroundColor: Colors.deepPurple,
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     } catch (e) {
@@ -42,25 +37,23 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --- 2. Notification Center (Bell Icon Click) ---
+  // --- Notification Center Fix (Theme Aware) ---
   void _showNotificationCenter() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      // Fixed: Removed hardcoded Colors.white
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
       builder: (context) => SizedBox(
         height: MediaQuery.of(context).size.height * 0.6,
         child: Column(
           children: [
-            Container(margin: const EdgeInsets.all(12), width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
-            const Text("Notifications", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Container(margin: const EdgeInsets.all(12), width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(10))),
+            Text("Notifications", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color)),
             const Divider(),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('notifications')
-                    .where('userId', isEqualTo: user!.uid)
-                    .snapshots(),
+                stream: FirebaseFirestore.instance.collection('notifications').where('userId', isEqualTo: user!.uid).snapshots(),
                 builder: (context, snap) {
                   if (!snap.hasData) return const Center(child: CircularProgressIndicator());
                   if (snap.data!.docs.isEmpty) return const Center(child: Text("No notifications yet"));
@@ -71,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       return ListTile(
                         leading: const CircleAvatar(backgroundColor: Colors.orangeAccent, child: Icon(Icons.notifications, color: Colors.white, size: 18)),
                         title: Text(n['title'] ?? "Alert", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(n['body'] ?? ""),
+                        subtitle: Text(n['body'] ?? "", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7))),
                         trailing: Text(n['timestamp'] != null ? timeago.format(n['timestamp'].toDate()) : "now", style: const TextStyle(fontSize: 10)),
                       );
                     },
@@ -85,7 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 3. Secure Search ---
   Widget _buildUserSearch() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('users').snapshots(),
@@ -112,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 4. Post Feed & Interactions ---
+  // --- Post Feed Fix (Deep Black Cards) ---
   Widget _buildPostFeed() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('posts').orderBy('timestamp', descending: true).snapshots(),
@@ -126,7 +118,12 @@ class _HomeScreenState extends State<HomeScreen> {
             List likes = data['likes'] ?? [];
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
+              decoration: BoxDecoration(
+                // Fixed: Card color now follows theme
+                color: Theme.of(context).cardColor, 
+                borderRadius: BorderRadius.circular(15), 
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)]
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -134,17 +131,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => OthersProfileScreen(userId: data['userId']))),
                     leading: const CircleAvatar(child: Icon(Icons.person)),
                     title: Text(data['username'] ?? "User", style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(data['timestamp'] != null ? timeago.format(data['timestamp'].toDate()) : ""),
+                    subtitle: Text(data['timestamp'] != null ? timeago.format(data['timestamp'].toDate()) : "", style: const TextStyle(fontSize: 11)),
                     trailing: data['userId'] == user!.uid ? IconButton(icon: const Icon(Icons.more_horiz), onPressed: () => _showPostOptions(doc.id, data['caption'])) : null,
                   ),
-                  Padding(padding: const EdgeInsets.all(15), child: Text(data['caption'] ?? "")),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5), 
+                    child: Text(data['caption'] ?? "", style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyLarge?.color))
+                  ),
                   const Divider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       TextButton.icon(
                         icon: Icon(likes.contains(user!.uid) ? Icons.favorite : Icons.favorite_border, color: Colors.red),
-                        label: Text("${likes.length}"),
+                        label: Text("${likes.length}", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),
                         onPressed: () {
                           var ref = FirebaseFirestore.instance.collection('posts').doc(doc.id);
                           if(likes.contains(user!.uid)) {
@@ -155,9 +155,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                         },
                       ),
-                      TextButton.icon(icon: const Icon(Icons.comment_outlined), label: const Text("Comment"), onPressed: () => _showComments(doc.id)),
+                      TextButton.icon(
+                        icon: Icon(Icons.comment_outlined, color: Colors.deepPurpleAccent), 
+                        label: Text("Comment", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)), 
+                        onPressed: () => _showComments(doc.id)
+                      ),
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 5),
                 ],
               ),
             );
@@ -167,22 +172,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 5. New Post Creation (Fixed) ---
+  // --- New Post Modal Theme Fix ---
   void _createNewPost() {
     TextEditingController postC = TextEditingController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).cardColor, // Fixed
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("New Post", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            TextField(controller: postC, maxLines: 3, decoration: const InputDecoration(hintText: "Write something...")),
+            Text("New Post", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Theme.of(context).textTheme.bodyLarge?.color)),
+            TextField(
+              controller: postC, 
+              maxLines: 3, 
+              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+              decoration: const InputDecoration(hintText: "Write something...", border: InputBorder.none)
+            ),
             const SizedBox(height: 10),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple, minimumSize: const Size(double.infinity, 45)),
               onPressed: () async {
                 if (postC.text.isNotEmpty) {
                   var userDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
@@ -206,29 +217,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 6. Comments & Edit/Delete Logic ---
+  // --- Comments Modal Theme Fix ---
   void _showComments(String postId) {
     TextEditingController commentC = TextEditingController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Fixed
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(padding: EdgeInsets.all(15), child: Text("Comments", style: TextStyle(fontWeight: FontWeight.bold))),
+            Padding(padding: const EdgeInsets.all(15), child: Text("Comments", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color))),
             SizedBox(
               height: 250,
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('posts').doc(postId).collection('comments').orderBy('timestamp', descending: true).snapshots(),
                 builder: (context, snap) {
-                  if (!snap.hasData) return const SizedBox();
+                  if (!snap.hasData) return const Center(child: CircularProgressIndicator());
                   return ListView.builder(
                     itemCount: snap.data!.docs.length,
                     itemBuilder: (context, i) {
                       var c = snap.data!.docs[i].data() as Map<String, dynamic>;
-                      return ListTile(title: Text(c['username'] ?? "User", style: const TextStyle(fontWeight: FontWeight.bold)), subtitle: Text(c['text'] ?? ""));
+                      return ListTile(
+                        title: Text(c['username'] ?? "User", style: const TextStyle(fontWeight: FontWeight.bold)), 
+                        subtitle: Text(c['text'] ?? "", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color))
+                      );
                     },
                   );
                 },
@@ -238,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(10),
               child: Row(
                 children: [
-                  Expanded(child: TextField(controller: commentC, decoration: const InputDecoration(hintText: "Add comment..."))),
+                  Expanded(child: TextField(controller: commentC, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color), decoration: const InputDecoration(hintText: "Add comment..."))),
                   IconButton(icon: const Icon(Icons.send, color: Colors.deepPurple), onPressed: () async {
                     if (commentC.text.isNotEmpty) {
                       var userDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
@@ -262,31 +277,42 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showPostOptions(String id, String cap) {
-    showModalBottomSheet(context: context, builder: (context) => Column(mainAxisSize: MainAxisSize.min, children: [
-      ListTile(leading: const Icon(Icons.edit), title: const Text("Edit"), onTap: () { Navigator.pop(context); _editDialog(id, cap); }),
-      ListTile(leading: const Icon(Icons.delete, color: Colors.red), title: const Text("Delete"), onTap: () async { 
-        await FirebaseFirestore.instance.collection('posts').doc(id).delete(); 
-        Navigator.pop(context); 
-        _addNotification("Deleted", "Post was removed");
-      }),
+    showModalBottomSheet(
+      context: context, 
+      backgroundColor: Theme.of(context).cardColor,
+      builder: (context) => Column(mainAxisSize: MainAxisSize.min, children: [
+        ListTile(leading: const Icon(Icons.edit), title: const Text("Edit"), onTap: () { Navigator.pop(context); _editDialog(id, cap); }),
+        ListTile(leading: const Icon(Icons.delete, color: Colors.red), title: const Text("Delete"), onTap: () async { 
+          await FirebaseFirestore.instance.collection('posts').doc(id).delete(); 
+          Navigator.pop(context); 
+        }),
     ]));
   }
 
   void _editDialog(String id, String cap) {
     TextEditingController editC = TextEditingController(text: cap);
-    showDialog(context: context, builder: (context) => AlertDialog(content: TextField(controller: editC), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")), ElevatedButton(onPressed: () async { 
-      await FirebaseFirestore.instance.collection('posts').doc(id).update({'caption': editC.text}); 
-      Navigator.pop(context); 
-      _addNotification("Updated", "Post updated successfully");
-    }, child: const Text("Update"))]));
+    showDialog(context: context, builder: (context) => AlertDialog(
+      backgroundColor: Theme.of(context).cardColor,
+      content: TextField(controller: editC, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)), 
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")), 
+        ElevatedButton(onPressed: () async { 
+          await FirebaseFirestore.instance.collection('posts').doc(id).update({'caption': editC.text}); 
+          Navigator.pop(context); 
+        }, child: const Text("Update"))
+      ]));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      // Fixed: No more hardcoded grey
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, 
       appBar: AppBar(
-        title: !isSearching ? const Text("Social Connect", style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold)) : TextField(autofocus: true, decoration: const InputDecoration(hintText: "Search...", border: InputBorder.none), onChanged: (val) => setState(() => searchQuery = val)),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: !isSearching 
+            ? const Text("Social Connect", style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold)) 
+            : TextField(autofocus: true, style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color), decoration: const InputDecoration(hintText: "Search...", border: InputBorder.none), onChanged: (val) => setState(() => searchQuery = val)),
         actions: [
           IconButton(icon: Icon(isSearching ? Icons.close : Icons.search), onPressed: () => setState(() { isSearching = !isSearching; searchQuery = ""; })),
           StreamBuilder<QuerySnapshot>(
