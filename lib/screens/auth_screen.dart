@@ -28,15 +28,27 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() => _isLoading = true);
     try {
       if (_isLogin) {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email.text.trim(), password: _pass.text.trim());
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _email.text.trim(), 
+          password: _pass.text.trim()
+        );
       } else {
         if (_pass.text != _confirmPass.text) throw Exception("Passwords don't match!");
-        UserCredential cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _email.text.trim(), password: _pass.text.trim());
+        
+        UserCredential cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _email.text.trim(), 
+          password: _pass.text.trim()
+        );
+
+        // Yahan humne naye user ke liye default fields add kar di hain
         await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set({
-          'name': _name.text, 
-          'email': _email.text,
+          'uid': cred.user!.uid, // UID store karna hamesha acha hota hai
+          'name': _name.text.trim(), 
+          'email': _email.text.trim(),
           'bio': "Hey there! I am using Social Connect.",
-          'profilePic': null
+          'profilePic': null,
+          'followersCount': 0, // Default 0 for new users
+          'followingCount': 0, // Default 0 for new users
         });
       }
     } on FirebaseAuthException catch (e) {
@@ -53,7 +65,7 @@ class _AuthScreenState extends State<AuthScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0E1B48),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -67,8 +79,10 @@ class _AuthScreenState extends State<AuthScreen> {
               children: [
                 const Icon(Icons.share_arrival_time_outlined, size: 80, color: Colors.white),
                 const SizedBox(height: 20),
-                const Text("Social Connect", style: TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-                const Text("Connect with the world", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                const Text("Social Connect", 
+                  style: TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                const Text("Connect with the world", 
+                  style: TextStyle(color: Colors.white70, fontSize: 14)),
                 const SizedBox(height: 40),
                 if (!_isLogin) _buildField(_name, "Full Name", Icons.person),
                 const SizedBox(height: 15),
@@ -91,12 +105,16 @@ class _AuthScreenState extends State<AuthScreen> {
                       elevation: 5,
                     ),
                     onPressed: _isLoading ? null : _submit,
-                    child: _isLoading ? const CircularProgressIndicator() : Text(_isLogin ? "LOGIN" : "CREATE ACCOUNT", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: _isLoading 
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)) 
+                      : Text(_isLogin ? "LOGIN" : "CREATE ACCOUNT", 
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ),
                 TextButton(
                   onPressed: () => setState(() => _isLogin = !_isLogin),
-                  child: Text(_isLogin ? "New here? Create an account" : "Already have an account? Login", style: const TextStyle(color: Colors.white)),
+                  child: Text(_isLogin ? "New here? Create an account" : "Already have an account? Login", 
+                    style: const TextStyle(color: Colors.white)),
                 ),
               ],
             ),

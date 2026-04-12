@@ -1,121 +1,93 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'chat_screen.dart';
 
 class OthersProfileScreen extends StatefulWidget {
-  final String userId;
-  const OthersProfileScreen({required this.userId, super.key});
+  final String userId; // The ID of the user we are viewing
+
+  OthersProfileScreen({required this.userId});
 
   @override
-  State<OthersProfileScreen> createState() => _OthersProfileScreenState();
+  _OthersProfileScreenState createState() => _OthersProfileScreenState();
 }
 
 class _OthersProfileScreenState extends State<OthersProfileScreen> {
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool isFollowing = false;
-  int followerCount = 0;
-  int followingCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _checkFollowStatus();
-    _getFollowStats();
+    checkIfFollowing();
   }
 
-  void _checkFollowStatus() async {
-    var doc = await FirebaseFirestore.instance
+  // Check if current user is already following this person
+  void checkIfFollowing() async {
+    DocumentSnapshot doc = await _firestore
         .collection('users')
-        .doc(widget.userId)
-        .collection('followers')
         .doc(currentUserId)
+        .collection('following')
+        .doc(widget.userId)
         .get();
-    if (mounted) setState(() => isFollowing = doc.exists);
-  }
 
-  void _getFollowStats() {
-    FirebaseFirestore.instance.collection('users').doc(widget.userId).collection('followers').snapshots().listen((snap) {
-      if (mounted) setState(() => followerCount = snap.docs.length);
-    });
-    FirebaseFirestore.instance.collection('users').doc(widget.userId).collection('following').snapshots().listen((snap) {
-      if (mounted) setState(() => followingCount = snap.docs.length);
+    setState(() {
+      isFollowing = doc.exists;
     });
   }
 
-  void _toggleFollow() async {
-    var userRef = FirebaseFirestore.instance.collection('users');
+  Future<void> toggleFollow() async {
     if (isFollowing) {
-      await userRef.doc(widget.userId).collection('followers').doc(currentUserId).delete();
-      await userRef.doc(currentUserId).collection('following').doc(widget.userId).delete();
+      // Unfollow Logic
+      await _firestore.collection('users').doc(currentUserId).collection('following').doc(widget.userId).delete();
+      await _firestore.collection('users').doc(widget.userId).collection('followers').doc(currentUserId).delete();
+
+      await _firestore.collection('users').doc(currentUserId).update({'followingCount': FieldValue.increment(-1)});
+      await _firestore.collection('users').doc(widget.userId).update({'followersCount': FieldValue.increment(-1)});
     } else {
-      await userRef.doc(widget.userId).collection('followers').doc(currentUserId).set({'at': DateTime.now()});
-      await userRef.doc(currentUserId).collection('following').doc(widget.userId).set({'at': DateTime.now()});
+      // Follow Logic
+      await _firestore.collection('users').doc(currentUserId).collection('following').doc(widget.userId).set({});
+      await _firestore.collection('users').doc(widget.userId).collection('followers').doc(currentUserId).set({});
+
+      await _firestore.collection('users').doc(currentUserId).update({'followingCount': FieldValue.increment(1)});
+      await _firestore.collection('users').doc(widget.userId).update({'followersCount': FieldValue.increment(1)});
     }
-    setState(() => isFollowing = !isFollowing);
+
+    setState(() {
+      isFollowing = !isFollowing;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Profile"),
-        actions: [
-          if (widget.userId != currentUserId)
-            IconButton(
-              icon: const Icon(Icons.chat_bubble_outline),
-              onPressed: () {
-                FirebaseFirestore.instance.collection('users').doc(widget.userId).get().then((doc) {
-                  Navigator.push(context, MaterialPageRoute(builder: (c) => ChatScreen(receiverId: widget.userId, receiverName: doc['name'])));
-                });
-              },
-            )
-        ],
-      ),
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection('users').doc(widget.userId).get(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
-
+      appBar: AppBar(title: Text("Profile")),
+      body: StreamBuilder(
+        stream: _firestore.collection('users').doc(widget.userId).snapshots(),
+        builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+          
+          var userData = snapshot.data!;
           return Column(
             children: [
-              const SizedBox(height: 20),
-              CircleAvatar(radius: 50, child: userData['profilePic'] == null ? const Icon(Icons.person, size: 50) : null),
-              const SizedBox(height: 10),
-              Text(userData['name'] ?? "User", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 15),
+              SizedBox(height: 20),
+              CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
+              Text(userData['name'], style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              Text(userData['bio'] ?? "No bio available"),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Column(children: [Text("$followerCount", style: const TextStyle(fontWeight: FontWeight.bold)), const Text("Followers")]),
-                  Column(children: [Text("$followingCount", style: const TextStyle(fontWeight: FontWeight.bold)), const Text("Following")]),
+                  Column(children: [Text("${userData['followersCount'] ?? 0}"), Text("Followers")]),
+                  SizedBox(width: 30),
+                  Column(children: [Text("${userData['followingCount'] ?? 0}"), Text("Following")]),
                 ],
               ),
-              const SizedBox(height: 15),
-              if (widget.userId != currentUserId)
-                ElevatedButton(
-                  onPressed: _toggleFollow,
-                  style: ElevatedButton.styleFrom(backgroundColor: isFollowing ? Colors.grey : Colors.deepPurple),
-                  child: Text(isFollowing ? "Unfollow" : "Follow", style: const TextStyle(color: Colors.white)),
+              ElevatedButton(
+                onPressed: toggleFollow,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isFollowing ? Colors.grey : Colors.purple,
                 ),
-              const Divider(),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('posts').where('userId', isEqualTo: widget.userId).snapshots(),
-                  builder: (context, snap) {
-                    if (!snap.hasData) return const SizedBox();
-                    return GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
-                      itemCount: snap.data!.docs.length,
-                      itemBuilder: (context, i) => Container(
-                        margin: const EdgeInsets.all(2),
-                        color: Colors.grey[300],
-                        child: Center(child: Text(snap.data!.docs[i]['caption'] ?? "", style: const TextStyle(fontSize: 10))),
-                      ),
-                    );
-                  },
-                ),
+                child: Text(isFollowing ? "Unfollow" : "Follow"),
               ),
             ],
           );
