@@ -37,11 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --- Notification Center Fix (Theme Aware) ---
   void _showNotificationCenter() {
     showModalBottomSheet(
       context: context,
-      // Fixed: Removed hardcoded Colors.white
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
       builder: (context) => SizedBox(
@@ -104,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- Post Feed Fix (Deep Black Cards) ---
+  // --- Post Feed Updated with Image URL Logic ---
   Widget _buildPostFeed() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('posts').orderBy('timestamp', descending: true).snapshots(),
@@ -116,10 +114,10 @@ class _HomeScreenState extends State<HomeScreen> {
             var doc = snapshot.data!.docs[i];
             var data = doc.data() as Map<String, dynamic>;
             List likes = data['likes'] ?? [];
+            
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
               decoration: BoxDecoration(
-                // Fixed: Card color now follows theme
                 color: Theme.of(context).cardColor, 
                 borderRadius: BorderRadius.circular(15), 
                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)]
@@ -131,13 +129,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => OthersProfileScreen(userId: data['userId']))),
                     leading: const CircleAvatar(child: Icon(Icons.person)),
                     title: Text(data['username'] ?? "User", style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(data['timestamp'] != null ? timeago.format(data['timestamp'].toDate()) : "", style: const TextStyle(fontSize: 11)),
+                    subtitle: Text(data['timestamp'] != null ? timeago.format(data['timestamp'].toDate()) : "just now", style: const TextStyle(fontSize: 11)),
                     trailing: data['userId'] == user!.uid ? IconButton(icon: const Icon(Icons.more_horiz), onPressed: () => _showPostOptions(doc.id, data['caption'])) : null,
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5), 
                     child: Text(data['caption'] ?? "", style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyLarge?.color))
                   ),
+
+                  // --- IMAGE URL LOGIC ADDED HERE ---
+                  if (data['imageUrl'] != null && data['imageUrl'].toString().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          data['imageUrl'],
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => const SizedBox(), // Hide if URL is broken
+                        ),
+                      ),
+                    ),
+
                   const Divider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -156,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       TextButton.icon(
-                        icon: Icon(Icons.comment_outlined, color: Colors.deepPurpleAccent), 
+                        icon: const Icon(Icons.comment_outlined, color: Colors.deepPurpleAccent), 
                         label: Text("Comment", style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)), 
                         onPressed: () => _showComments(doc.id)
                       ),
@@ -172,13 +186,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- New Post Modal Theme Fix ---
+  // --- New Post Modal with Image URL Field ---
   void _createNewPost() {
     TextEditingController postC = TextEditingController();
+    TextEditingController urlC = TextEditingController(); // Controller for URL
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).cardColor, // Fixed
+      backgroundColor: Theme.of(context).cardColor,
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
         child: Column(
@@ -189,7 +205,17 @@ class _HomeScreenState extends State<HomeScreen> {
               controller: postC, 
               maxLines: 3, 
               style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-              decoration: const InputDecoration(hintText: "Write something...", border: InputBorder.none)
+              decoration: const InputDecoration(hintText: "What's on your mind?", border: InputBorder.none)
+            ),
+            const Divider(),
+            TextField(
+              controller: urlC, 
+              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+              decoration: const InputDecoration(
+                hintText: "Paste Image URL (Optional)", 
+                prefixIcon: Icon(Icons.link, size: 20),
+                border: InputBorder.none
+              )
             ),
             const SizedBox(height: 10),
             ElevatedButton(
@@ -199,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   var userDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
                   await FirebaseFirestore.instance.collection('posts').add({
                     'caption': postC.text,
+                    'imageUrl': urlC.text.trim(), // Save URL to Firestore
                     'username': userDoc['name'] ?? "User",
                     'userId': user!.uid,
                     'timestamp': FieldValue.serverTimestamp(),
@@ -217,13 +244,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- Comments Modal Theme Fix ---
   void _showComments(String postId) {
     TextEditingController commentC = TextEditingController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Fixed
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: Column(
@@ -306,7 +332,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Fixed: No more hardcoded grey
       backgroundColor: Theme.of(context).scaffoldBackgroundColor, 
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
