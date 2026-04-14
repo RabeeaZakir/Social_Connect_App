@@ -1,54 +1,62 @@
-# Social Connect 📱
-**Minimal, Real-Time Social Media Platform**
+# 📱 Social Connect
+Social Connect is a high-performance, real-time social media platform designed to provide a seamless user experience. Built with Flutter and Firebase, this project was developed as a comprehensive internship milestone at DevelopersHub Corporation. It demonstrates expertise in real-time data synchronization, secure cloud architecture, and modern UI/UX principles.
 
-Social Connect is a high-performance social media application built with **Flutter** and **Firebase**. Developed as a comprehensive 3-week internship project, it showcases real-time data synchronization, secure authentication, and a user-centric UI/UX.
+# ✨ Key Features
+Real-Time Feed: Dynamic post fetching with instant UI updates using StreamBuilder.
+Full CRUD Support: Users can create, edit, and delete posts with real-time Firestore synchronization.
+Advanced Profile Management: * Custom Profile Grid (Instagram-style).
+Dynamic Profile Editing (Name, Bio, and Profile Picture via URL).
+Engagement Suite: * Like System: Real-time like/unlike toggling.
+Comment Module: Interactive bottom-sheet comments.
+Follow/Unfollow: Functional social graph with follower/following counts.
+Search & Discovery: Robust user search functionality with fail-safe error handling.
+Notification Engine: * In-app SnackBar alerts.
+Persistent Notification Center stored in Cloud Firestore.
 
----
+# 🚀 Internship Milestones
+# Week 1: Foundation & Security
+Authentication: Secure Sign-Up, Login, and Password Recovery using Firebase Auth.
+Profile Architecture: Personal user data management and initial profile setup.
+Core Navigation: Seamless transition using BottomNavigationBar.
 
-## 🚀 Internship Milestones
+# Week 2: Social Core & Interaction
+Engagement Engine: Integrated a real-time Like system and interactive Comment modules using showModalBottomSheet.
+User Connectivity: Developed navigable user profiles directly from the feed to enhance discovery.
+Cloud Integration: Established Firestore structures for scalable post management.
 
-### Week 1: Foundation & Security
-* **Authentication:** Secure Sign-Up, Login, and Password Recovery using Firebase Auth.
-* **Profile Architecture:** Personal user data management and profile setup.
-* **Core Navigation:** Seamless transition between features using `BottomNavigationBar`.
+# Week 3: Advanced UX & Optimization
+Profile Grid & DP Fix: Implemented a professional grid view for user posts and a dynamic DP update system via image URLs.
+Notification History: Created a permanent history center for likes and comments.
+Performance: Optimized UI lag using specialized Stream handling and timeago for human-readable timestamps.
 
-### Week 2: Social Core & Real-time Interaction
-* **Live Feed:** Dynamic content fetching using Cloud Firestore.
-* **Full CRUD Operations:** Users can Create, Edit, and Delete posts with instant updates.
-* **Engagement Engine:** * **Like System:** Real-time state toggling for post likes.
-    * **Comment Module:** Interactive `showModalBottomSheet` for deep engagement.
-* **Discovery:** Navigable user profiles directly from the feed.
+# 🛠️ Tech Stack
+Frontend: Flutter (Dart)
+Backend: Firebase (Firestore & Authentication)
+Fonts: Google Fonts (Poppins / Montserrat)
+Key Packages: * cloud_firestore (Database)
+firebase_auth (Security)
+timeago (UX)
+google_fonts (Styling)
 
-### Week 3: Advanced UX & Optimization 
-* **Real-time Sync:** Powered by `StreamBuilder` for zero-lag UI updates.
-* **Notification System:** * **Interactive Popups:** In-app SnackBar alerts for likes and comments.
-    * **Permanent History:** Cloud-stored notification center for persistence.
-* **Robust Search:** Secure user discovery with fail-safe error handling for missing data fields.
-* **Human-Readable UX:** Integrated `timeago` for intuitive timestamps.
+# ⚙️ Installation & Setup
+Clone the Repository:
 
----
+Bash
+git clone https://github.com/RabeeaZakir/social-connect-app.git
 
-## 🛠️ Tech Stack
-* **Frontend:** Flutter (Dart)
-* **Backend:** Firebase (Firestore & Auth)
-* **State Management:** Provider / State-driven Streams
-* **Key Packages:** `cloud_firestore`, `firebase_auth`, `timeago`, `lottie`
+# Firebase Configuration:
+Create a project in the Firebase Console.
+Register your Android/iOS app.
+Download google-services.json and place it in android/app/.
 
----
+# Install Dependencies:
 
-## ⚙️ Installation & Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/RabeeaZakir/social-connect-app.git](https://github.com/RabeeaZakir/social-connect-app.git)
-# Setup Firebase:
-Create a project in Firebase Console.
-Place your google-services.json in the android/app/ directory.
-
-# Install dependencies:
 Bash
 flutter pub get
+Run the Project:
 
-# Run the app:
 Bash
 flutter run
+
+
+git push origin main
