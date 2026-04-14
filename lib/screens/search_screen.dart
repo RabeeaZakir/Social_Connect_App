@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'others_profile_screen.dart'; // Make sure this path is correct
+import 'others_profile_screen.dart'; 
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -47,8 +47,6 @@ class _SearchScreenState extends State<SearchScreen> {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(child: Text("No users found"));
           }
-
-          // Filtering logic based on name
           var results = snapshot.data!.docs.where((doc) {
             String name = doc['name'] ?? '';
             return name.toLowerCase().contains(query);
@@ -67,7 +65,6 @@ class _SearchScreenState extends State<SearchScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(userData['email'] ?? ''),
                 onTap: () {
-                  // Navigate to Others Profile Screen
                   Navigator.push(
                     context,
                     MaterialPageRoute(

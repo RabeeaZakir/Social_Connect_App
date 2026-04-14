@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// --- 1. THEME & SETTINGS LOGIC (Merged) ---
 class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = true;
   bool get isDarkMode => _isDarkMode;
@@ -34,8 +32,6 @@ class ThemeProvider with ChangeNotifier {
           );
   }
 }
-
-// --- 2. THE SETTINGS SCREEN (Detailed & Functional) ---
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -51,7 +47,6 @@ class SettingsScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // User Profile Section
             _buildUserCard(user, themeProvider),
 
             _buildSectionHeader("Appearance"),
@@ -117,8 +112,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // --- UI HELPER METHODS ---
-
   Widget _buildSectionHeader(String title) {
     return Container(
       width: double.infinity,
@@ -168,8 +161,6 @@ class SettingsScreen extends StatelessWidget {
       onTap: () => onTap(context),
     );
   }
-
-  // --- DETAILED BOTTOM SHEETS (Functions) ---
 
   void _showAccountStatus(BuildContext context) {
     _showCustomSheet(context, "Account Status", Icons.verified, Colors.green, 

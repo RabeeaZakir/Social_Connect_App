@@ -3,8 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class OthersProfileScreen extends StatefulWidget {
-  final String userId; // The ID of the user we are viewing
-
+  final String userId;
   OthersProfileScreen({required this.userId});
 
   @override
@@ -22,72 +21,94 @@ class _OthersProfileScreenState extends State<OthersProfileScreen> {
     checkIfFollowing();
   }
 
-  // Check if current user is already following this person
   void checkIfFollowing() async {
-    DocumentSnapshot doc = await _firestore
-        .collection('users')
-        .doc(currentUserId)
-        .collection('following')
-        .doc(widget.userId)
-        .get();
-
-    setState(() {
-      isFollowing = doc.exists;
-    });
+    DocumentSnapshot doc = await _firestore.collection('users').doc(currentUserId).collection('following').doc(widget.userId).get();
+    if (mounted) setState(() => isFollowing = doc.exists);
   }
 
   Future<void> toggleFollow() async {
-    if (isFollowing) {
-      // Unfollow Logic
-      await _firestore.collection('users').doc(currentUserId).collection('following').doc(widget.userId).delete();
-      await _firestore.collection('users').doc(widget.userId).collection('followers').doc(currentUserId).delete();
-
-      await _firestore.collection('users').doc(currentUserId).update({'followingCount': FieldValue.increment(-1)});
-      await _firestore.collection('users').doc(widget.userId).update({'followersCount': FieldValue.increment(-1)});
-    } else {
-      // Follow Logic
-      await _firestore.collection('users').doc(currentUserId).collection('following').doc(widget.userId).set({});
-      await _firestore.collection('users').doc(widget.userId).collection('followers').doc(currentUserId).set({});
-
-      await _firestore.collection('users').doc(currentUserId).update({'followingCount': FieldValue.increment(1)});
-      await _firestore.collection('users').doc(widget.userId).update({'followersCount': FieldValue.increment(1)});
+    try {
+      if (isFollowing) {
+        await _firestore.collection('users').doc(currentUserId).collection('following').doc(widget.userId).delete();
+        await _firestore.collection('users').doc(widget.userId).collection('followers').doc(currentUserId).delete();
+        await _firestore.collection('users').doc(currentUserId).update({'followingCount': FieldValue.increment(-1)});
+        await _firestore.collection('users').doc(widget.userId).update({'followersCount': FieldValue.increment(-1)});
+      } else {
+        await _firestore.collection('users').doc(currentUserId).collection('following').doc(widget.userId).set({});
+        await _firestore.collection('users').doc(widget.userId).collection('followers').doc(currentUserId).set({});
+        await _firestore.collection('users').doc(currentUserId).update({'followingCount': FieldValue.increment(1)});
+        await _firestore.collection('users').doc(widget.userId).update({'followersCount': FieldValue.increment(1)});
+      }
+      if (mounted) setState(() => isFollowing = !isFollowing);
+    } catch (e) {
+      debugPrint("Follow Error: $e");
     }
-
-    setState(() {
-      isFollowing = !isFollowing;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Profile")),
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, iconTheme: const IconThemeData(color: Colors.white)),
       body: StreamBuilder(
         stream: _firestore.collection('users').doc(widget.userId).snapshots(),
         builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-          if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-          
-          var userData = snapshot.data!;
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          var userData = snapshot.data!.data() as Map<String, dynamic>;
+
           return Column(
             children: [
-              SizedBox(height: 20),
-              CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
-              Text(userData['name'], style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              Text(userData['bio'] ?? "No bio available"),
+              CircleAvatar(
+                radius: 50,
+                backgroundImage: (userData['profilePic'] != null && userData['profilePic'] != "")
+                    ? NetworkImage(userData['profilePic']) : null,
+                child: (userData['profilePic'] == null || userData['profilePic'] == "")
+                    ? const Icon(Icons.person, size: 50, color: Colors.white) : null,
+              ),
+              const SizedBox(height: 10),
+              Text(userData['name'] ?? "User", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(userData['bio'] ?? "No bio available", style: const TextStyle(color: Colors.grey)),
+              const SizedBox(height: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Column(children: [Text("${userData['followersCount'] ?? 0}"), Text("Followers")]),
-                  SizedBox(width: 30),
-                  Column(children: [Text("${userData['followingCount'] ?? 0}"), Text("Following")]),
+                  _statItem("${userData['followersCount'] ?? 0}", "Followers"),
+                  const SizedBox(width: 30),
+                  _statItem("${userData['followingCount'] ?? 0}", "Following"),
                 ],
               ),
+              const SizedBox(height: 15),
               ElevatedButton(
                 onPressed: toggleFollow,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isFollowing ? Colors.grey : Colors.purple,
+                  backgroundColor: isFollowing ? Colors.grey[800] : Colors.purpleAccent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  minimumSize: const Size(150, 40),
                 ),
-                child: Text(isFollowing ? "Unfollow" : "Follow"),
+                child: Text(isFollowing ? "Unfollow" : "Follow", style: const TextStyle(color: Colors.white)),
+              ),
+              const Divider(color: Colors.white24, height: 30),
+              Expanded(
+                child: StreamBuilder(
+                  stream: _firestore.collection('posts').where('uid', isEqualTo: widget.userId).snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> postSnap) {
+                    if (!postSnap.hasData) return const Center(child: CircularProgressIndicator());
+                    if (postSnap.data!.docs.isEmpty) return const Center(child: Text("No posts yet", style: TextStyle(color: Colors.white54)));
+
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(8),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5, mainAxisSpacing: 5),
+                      itemCount: postSnap.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        var post = postSnap.data!.docs[index];
+                        return Container(
+                          color: Colors.grey[900],
+                          child: post['imageUrl'] != "" ? Image.network(post['imageUrl'], fit: BoxFit.cover) : const Icon(Icons.text_snippet, color: Colors.white24),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           );
@@ -95,4 +116,9 @@ class _OthersProfileScreenState extends State<OthersProfileScreen> {
       ),
     );
   }
+
+  Widget _statItem(String count, String label) => Column(children: [
+        Text(count, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12))
+      ]);
 }

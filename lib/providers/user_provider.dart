@@ -8,8 +8,6 @@ class UserProvider with ChangeNotifier {
 
   Map<String, dynamic>? get userData => _userData;
   bool get isLoading => _isLoading;
-
-  // Global method jo kahin se bhi user ka data fetch kar sakay
   Future<void> fetchUserData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {

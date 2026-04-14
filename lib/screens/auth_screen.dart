@@ -40,15 +40,14 @@ class _AuthScreenState extends State<AuthScreen> {
           password: _pass.text.trim()
         );
 
-        // Yahan humne naye user ke liye default fields add kar di hain
         await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set({
-          'uid': cred.user!.uid, // UID store karna hamesha acha hota hai
+          'uid': cred.user!.uid, 
           'name': _name.text.trim(), 
           'email': _email.text.trim(),
           'bio': "Hey there! I am using Social Connect.",
           'profilePic': null,
-          'followersCount': 0, // Default 0 for new users
-          'followingCount': 0, // Default 0 for new users
+          'followersCount': 0, 
+          'followingCount': 0, 
         });
       }
     } on FirebaseAuthException catch (e) {

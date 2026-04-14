@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-
-// Existing Imports
 import 'screens/settings_screen.dart'; 
 import 'screens/profile_screen.dart';
 import 'screens/liked_post_screen.dart';
@@ -14,7 +12,7 @@ import 'screens/chat_screen.dart';
 import 'screens/user_info_screen.dart';
 import 'screens/others_profile_screen.dart';
 import 'screens/search_screen.dart';
-import 'screens/inbox_screen.dart'; // Nayi file jo humne banayi
+import 'screens/inbox_screen.dart'; 
 import 'providers/user_provider.dart';
 
 void main() async {
@@ -67,15 +65,13 @@ class MainWrapper extends StatefulWidget {
 
 class _MainWrapperState extends State<MainWrapper> {
   int _currentIndex = 0;
-
-  // Maine yahan Search aur Inbox ko add kar diya hai
   final List<Widget> _screens = [
-    const HomeScreen(),        // Index 0
-    SearchScreen(),            // Index 1 (Naya)
-    const InboxScreen(),       // Index 2 (Naya)
-    const LikedPostsScreen(),  // Index 3
-    ProfileScreen(),           // Index 4
-    const SettingsScreen(),    // Index 5
+    const HomeScreen(),        
+    SearchScreen(),            
+    const InboxScreen(),      
+    const LikedPostsScreen(),  
+    ProfileScreen(),
+    const SettingsScreen(),    
   ];
 
   @override
@@ -92,11 +88,11 @@ class _MainWrapperState extends State<MainWrapper> {
         selectedItemColor: Colors.deepPurpleAccent,
         unselectedItemColor: isDark ? Colors.white54 : Colors.grey,
 
-        type: BottomNavigationBarType.fixed, // Items 3 se zyada hain islye fixed zaroori hai
+        type: BottomNavigationBarType.fixed, 
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"), // Naya Icon
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: "Chats"), // Naya Icon
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"), 
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: "Chats"), 
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Liked"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),

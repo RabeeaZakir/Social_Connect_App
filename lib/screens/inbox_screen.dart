@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'chat_screen.dart'; // Ensure ChatScreen file exists
+import 'chat_screen.dart'; 
 
 class InboxScreen extends StatelessWidget {
   const InboxScreen({super.key});
@@ -11,7 +11,7 @@ class InboxScreen extends StatelessWidget {
     final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0E1B48), // Aapki theme ke mutabiq
+      backgroundColor: const Color(0xFF0E1B48), 
       appBar: AppBar(
         title: const Text("Messages", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
@@ -27,8 +27,6 @@ class InboxScreen extends StatelessWidget {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text("No users found", style: TextStyle(color: Colors.white)));
           }
-
-          // Khud ko list se nikalne ke liye
           var users = snapshot.data!.docs.where((doc) => doc.id != currentUserId).toList();
 
           return ListView.builder(

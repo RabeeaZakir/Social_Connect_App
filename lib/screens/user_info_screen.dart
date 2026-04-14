@@ -14,12 +14,9 @@ class UserInfoScreen extends StatefulWidget {
 
 class _UserInfoScreenState extends State<UserInfoScreen> {
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-  
-  // Local states for switches (Real app mein ye database se linked hote hain)
+
   bool isChatLocked = false;
   bool isTranslateOn = false;
-
-  // --- BLOCK USER FUNCTION ---
   void _blockUser() async {
     showDialog(
       context: context,
@@ -33,8 +30,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
                 'blockedUsers': FieldValue.arrayUnion([widget.userId])
               });
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Go back to chat
+              Navigator.pop(context); 
+              Navigator.pop(context); 
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("User Blocked")));
             },
             child: const Text("Block", style: TextStyle(color: Colors.red)),
@@ -77,8 +74,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 
                 _buildInfoTile(Icons.image, "Media visibility", () {}),
                 _buildInfoTile(Icons.timer, "Disappearing messages", () {}, subtitle: "Off"),
-                
-                // Functional Switch for Chat Lock
                 ListTile(
                   leading: const Icon(Icons.lock, color: Colors.white),
                   title: const Text("Chat lock", style: TextStyle(color: Colors.white)),
@@ -92,8 +87,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 ),
 
                 _buildInfoTile(Icons.security, "Advanced chat privacy", () {}, subtitle: "Off"),
-
-                // Functional Switch for Translation
                 ListTile(
                   leading: const Icon(Icons.translate, color: Colors.white),
                   title: const Text("Translate messages", style: TextStyle(color: Colors.white)),
@@ -107,8 +100,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 ),
 
                 _buildInfoTile(Icons.favorite_border, "Add to Favourites", () {}),
-                
-                // Functional Block Button
                 _buildInfoTile(Icons.block, "Block ${data['name']}", _blockUser, color: Colors.red),
                 
                 const SizedBox(height: 20),

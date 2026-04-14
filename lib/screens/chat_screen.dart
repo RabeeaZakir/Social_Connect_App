@@ -22,13 +22,9 @@ class _ChatScreenState extends State<ChatScreen> {
     ids.sort();
     return ids.join("_");
   }
-
-  // --- DELETE MESSAGE ---
   void _deleteMessage(String msgId) {
     FirebaseFirestore.instance.collection('chats').doc(getChatId()).collection('messages').doc(msgId).delete();
   }
-
-  // --- EDIT MESSAGE ---
   void _editMessage(String msgId, String oldText) {
     _controller.text = oldText;
     showDialog(
